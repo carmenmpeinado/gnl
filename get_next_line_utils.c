@@ -5,49 +5,96 @@ size_t	ft_strlen(const char *str)
 	size_t	n;
 
 	n = 0;
-	while (str[n] != '\0')
+	if (!str)
+		return (0);
+	while (str[n])
 		n++;
 	return (n);
 }
 
-size_t	ft_strlcat(char *dst, const char *src, size_t size)
+char	*ft_strdup(char *s)
 {
-	size_t	i;
-	size_t	j;
-	size_t	dst_len;
-	size_t	src_len;
+	char	*newstr;
+	int	i;
 
-	dst_len = ft_strlen(dst);
-	src_len = ft_strlen(src);
-	if (size == 0)
-		return (src_len);
-	if (size <= dst_len)
-		return (size + src_len);
-	i = dst_len;
-	j = 0;
-	while (src[j] != '\0' && i < size - 1)
-	{
-		dst[i] = src[j];
-		i++;
-		j++;
-	}
-	dst[i] = '\0';
-	return (dst_len + src_len);
-}
-size_t	ft_strlcpy(char *dst, const char *src, size_t size)
-{
-	size_t	i;
-	size_t	src_len;
-
-	src_len = ft_strlen(src);
-	if (size == 0)
-		return (src_len);
 	i = 0;
-	while (src[i] != '\0' && i < size - 1)
+	if (!s)
+		return (NULL);
+	newstr = malloc((ft_strlen(s) + 1) * sizeof(char));
+	if (!newstr)
+		return (NULL);
+	while (s[i] != '\0')
 	{
-		dst[i] = src[i];
+		newstr[i] = s[i];
 		i++;
 	}
-	dst[i] = '\0';
-	return (src_len);
+	newstr[i] = '\0';
+	return (newstr);
+}
+char	*ft_substr(char const *s, unsigned int start, size_t n)
+{
+	char	*substr;
+	size_t	total_len;
+	size_t	i;
+
+	if (!s)
+		return (NULL);
+	total_len = ft_strlen(s);
+	if (start >= total_len)
+		return (ft_strdup(""));
+	if (start + n > total_len)
+		n = total_len - start;
+	substr = malloc(sizeof(char) * (n + 1));
+	if (!substr)
+		return (NULL);
+	i = 0;
+	while (i < n && s[start + i])
+	{
+		substr[i] = s[start + i];
+		i ++;
+	}
+	substr[i] = '\0';
+	return (substr);
+}
+char	*ft_strjoin(char *s1, char *s2)
+{
+	size_t	i;
+	char	*joined;
+	size_t	len1;
+
+	if (!s1 || !s2)
+		return (NULL);
+	len1 = ft_strlen(s1);
+	joined = malloc (len1 + ft_strlen(s2) + 1);
+	if (!joined)
+		return (NULL);
+	i = 0;
+	while (s1[i])
+	{
+		joined[i] = s1[i];
+		i++;
+	}
+	i = 0;
+	while (s2[i])
+	{
+		joined[len1] = s2[i];
+		len1++;
+		i++;
+	}
+	joined[len1] = '\0';
+	return (joined);
+}
+char *ft_strchr(const char *s, int c)
+{
+	if (!s)
+		return (NULL);
+	while (*s)
+	{
+		if (*s == (char)c)
+			return ((char *)s);
+		s++;
+	}
+	if ((char)c == '\0')
+		return ((char *)s);
+	return (NULL);
 }

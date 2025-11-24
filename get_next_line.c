@@ -1,110 +1,127 @@
-
 #include "get_next_line.h"
-#include <stddef.h>
+#include <stdlib.h>
+#include <unistd.h>
 
+static int	check_init_errors(char **stash)
+{
+	if (!*stash)
+	{
+		*stash = ft_strdup("");
+		if (!*stash)
+			return (0);
+	}
+	return (1);
+}
 
-static size_t	findnewline(const char *s)
+static int	append_buffer(char **stash, char *buffer)
+{
+	char	*tmp;
+
+	tmp = ft_strjoin(*stash, buffer);
+	if (!tmp)
+	{
+		free(*stash);
+		*stash = NULL;
+		return (0);
+	}
+	free(*stash);
+	*stash = tmp;
+	return (1);
+}
+
+static char	*read_and_append(int fd, char **stash)
+{
+	char	*buffer;
+	ssize_t	bytes;
+
+	if (!check_init_errors(stash))
+		return (NULL);
+	buffer = malloc(BUFFER_SIZE + 1);
+	if (!buffer)
+		return (NULL);
+	bytes = 1;
+	while (!ft_strchr(*stash, '\n') && bytes > 0)
+	{
+		bytes = read(fd, buffer, BUFFER_SIZE);
+		if (bytes <= 0)
+			break;
+		buffer[bytes] = '\0';
+		if (!append_buffer(stash, buffer))
+		{
+			free(buffer);
+			return (NULL);
+		}
+	}
+	free(buffer);
+	return (*stash);
+}
+
+static char	*extract_line(char *stash)
 {
 	size_t	i;
-
-	if (!s)
-		return((size_t)-1);
-	i = 0;
-	while (s[i])
-	{
-		if (s[i] == '\n')
-			return (i);
-		i++;
-	}
-	return ((size_t)-1);
-}
-
-static char	*joinfree(char *s1, const char *s2)
-{
-	char	*joined;
-	size_t	len1;
-	size_t	len2;
-
-	if (s1)
-		len1 = ft_strlen(s1);
-	else
-	 	len1 = 0;
-	if (s2)
-		len2 = ft_strlen(s2);
-	else
-		len2 = 0;
-	joined = malloc(len1 + len2 +1);
-	if (!joined)
-		return (NULL);
-	if (s1)
-	{
-		ft_strlcpy(joined, s1, len1 +1);
-		free(s1);
-	}
-	else
-		joined[0] = '\0';
-	ft_strlcat(joined, s2, len1 + len2 +1);
-	return (joined);
-}
-
-static char	*linegiven(char *buffered)
-{
-	size_t	position;
 	char	*line;
 
-	if(!buffered || !*buffered)
+	if (!stash || !*stash)
 		return (NULL);
-	position = findnewline(buffered);
-	if (position == (size_t)-1)
-		position = ft_strlen(buffered);
-	line = malloc(position + 2);
-	if(!line)
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+		i++;
+	line = malloc(i + (stash[i] == '\n') + 1);
+	if (!line)
 		return (NULL);
-	ft_strlcpy(line, buffered, position +2);
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+	{
+		line[i] = stash[i];
+		i++;
+	}
+	if (stash[i] == '\n')
+	{
+		line[i] = '\n';
+		i++;
+	}
+	line[i] = '\0';
 	return (line);
 }
 
-static char	*clean(char *buffered)
+static char	*clean_stash(char *stash)
 {
-	size_t	position;
-	size_t	len;
-	char	*renew;
+	size_t	i = 0;
+	size_t	j = 0;
+	char	*newstash;
 
-	position = findnewline(buffered);
-	if (position == (size_t)-1)
+	while (stash[i] && stash[i] != '\n')
+		i++;
+	if (!stash[i])
 	{
-		free(buffered);
-		return(NULL);
+		free(stash);
+		return (NULL);
 	}
-	len = ft_strlen(buffered + position +1);
-	renew = malloc(len+1);
-	if (!renew)
-		return(NULL);
-	ft_strlcpy(renew, buffered + position +1, len +1);
-	free(buffered);
-	return(renew);
+	newstash = malloc(ft_strlen(stash) - i);
+	if (!newstash)
+	{
+		free(stash);
+		return (NULL);
+	}
+	i++;
+	while (stash[i])
+		newstash[j++] = stash[i++];
+	newstash[j] = '\0';
+	free(stash);
+	return (newstash);
 }
+
 char	*get_next_line(int fd)
 {
-	char	*line;
-	static char	*buffered;
-	char	stockage[BUFFER_SIZE +1];
-	size_t	bytes;
+	static char	*stash;
+	char		*line;
 
+	stash = (void *)stash;
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	bytes = 1;
-	while (findnewline(buffered) == (size_t)-1 && bytes > 0)
-	{
-		bytes = read(fd, stockage, BUFFER_SIZE);
-		if (bytes <= 0)
-			break;
-		stockage[bytes] = '\0';
-		buffered = joinfree(buffered, stockage);
-		if (!buffered)
-			return(NULL);
-	}
-	line = linegiven(buffered);
-	buffered = clean(buffered);
-	return(line);
+	if (!read_and_append(fd, &stash))
+		return (NULL);
+	line = extract_line(stash);
+	stash = clean_stash(stash);
+	return (line);
 }
