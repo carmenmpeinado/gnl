@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: capeinad <capeinad@student.42madrid.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/28 23:07:58 by capeinad          #+#    #+#             */
+/*   Updated: 2025/11/29 12:02:09 by capeinad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
 size_t	ft_strlen(const char *str)
@@ -15,7 +27,7 @@ size_t	ft_strlen(const char *str)
 char	*ft_strdup(char *s)
 {
 	char	*newstr;
-	int	i;
+	int		i;
 
 	i = 0;
 	if (!s)
@@ -31,6 +43,7 @@ char	*ft_strdup(char *s)
 	newstr[i] = '\0';
 	return (newstr);
 }
+
 char	*ft_substr(char const *s, unsigned int start, size_t n)
 {
 	char	*substr;
@@ -56,6 +69,7 @@ char	*ft_substr(char const *s, unsigned int start, size_t n)
 	substr[i] = '\0';
 	return (substr);
 }
+
 char	*ft_strjoin(char *s1, char *s2)
 {
 	size_t	i;
@@ -84,7 +98,8 @@ char	*ft_strjoin(char *s1, char *s2)
 	joined[len1] = '\0';
 	return (joined);
 }
-char *ft_strchr(const char *s, int c)
+
+char	*ft_strchr(const char *s, int c)
 {
 	if (!s)
 		return (NULL);
